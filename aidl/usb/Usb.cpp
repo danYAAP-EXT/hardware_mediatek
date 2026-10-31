@@ -454,9 +454,13 @@ Status getCurrentRoleHelper(const string& portName, bool connected, PortRole* cu
             return Status::ERROR;
         }
         if (accessory == "analog_audio") {
-            currentRole->set<PortRole::mode>(PortMode::AUDIO_ACCESSORY);
+            if (currentRole->getTag() == PortRole::powerRole) {
+              currentRole->set<PortRole::powerRole>(PortPowerRole::SINK);
+            } else {
+              currentRole->set<PortRole::mode>(PortMode::AUDIO_ACCESSORY);
+            }
             return Status::SUCCESS;
-        } else if (accessory == "debug") {
+        } else if (accessory == "debug" && currentRole->getTag() == PortRole::mode) {
             currentRole->set<PortRole::mode>(PortMode::DEBUG_ACCESSORY);
             return Status::SUCCESS;
         }
@@ -471,9 +475,15 @@ Status getCurrentRoleHelper(const string& portName, bool connected, PortRole* cu
     extractRole(&roleName);
 
     if (roleName == "source") {
+      if (currentRole->getTag() == PortRole::powerRole)
         currentRole->set<PortRole::powerRole>(PortPowerRole::SOURCE);
+      else
+        currentRole->set<PortRole::mode>(PortMode::DFP);
     } else if (roleName == "sink") {
+      if (currentRole->getTag() == PortRole::powerRole)
         currentRole->set<PortRole::powerRole>(PortPowerRole::SINK);
+      else
+        currentRole->set<PortRole::mode>(PortMode::UFP);
     } else if (roleName == "host") {
         if (currentRole->getTag() == PortRole::dataRole)
             currentRole->set<PortRole::dataRole>(PortDataRole::HOST);
